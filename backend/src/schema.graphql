@@ -21,6 +21,7 @@ type Link {
   url: String!
   postedBy: User
   votes: [Vote!]!
+  createdAt: DateTime!
 }
 
 input LinkOrderByInput {
@@ -35,6 +36,7 @@ enum Sort {
 }
 
 type Feed {
+  id: String
   links: [Link!]!
   count: Int!
 }
@@ -56,3 +58,5 @@ type User {
   email: String!
   links: [Link!]!
 }
+
+scalar DateTime
