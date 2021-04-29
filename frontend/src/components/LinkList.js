@@ -37,9 +37,8 @@ const NEW_LINKS_SUBSCRIPTION = gql`
   subscription {
     newLink {
       id
-      url
       description
-      createdAt
+      url
       postedBy {
         id
         name
@@ -50,6 +49,7 @@ const NEW_LINKS_SUBSCRIPTION = gql`
           id
         }
       }
+      createdAt
     }
   }
 `;
@@ -106,7 +106,7 @@ const LinkList = () => {
     data,
     loading,
     error,
-    subscribeToMore
+    subscribeToMore,
   } = useQuery(FEED_QUERY, {
     variables: getQueryVariables(isNewPage, page)
   });
@@ -114,6 +114,7 @@ const LinkList = () => {
   subscribeToMore({
     document: NEW_LINKS_SUBSCRIPTION,
     updateQuery: (prev, { subscriptionData }) => {
+      console.log('ok');
       if (!subscriptionData.data) return prev;
       const newLink = subscriptionData.data.newLink;
       const exists = prev.feed.links.find(

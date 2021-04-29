@@ -24,6 +24,14 @@ async function feed(parent, args, context, info) {
   }
 }
 
+const isEmpty = require("lodash/isEmpty");
+async function loggedInUser(_, __, { req }) {
+  if (isEmpty(req.user)) throw new AuthenticationError("Must authenticate");
+  const user = await users.get({ userId: req.user.id });
+  return user;
+}
+
 module.exports = {
   feed,
+  loggedInUser,
 }

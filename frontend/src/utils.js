@@ -1,3 +1,27 @@
+export const USER_KEY = "loggedInUser";
+export const TOKEN_KEY = "token";
+export var user;
+
+export function saveUser(tokens) {
+  sessionStorage.setItem(TOKEN_KEY, tokens.token);
+  sessionStorage.setItem(USER_KEY, JSON.stringify(tokens.user));
+  user = tokens.user;
+}
+
+export function getUser() {
+  const user = sessionStorage.getItem(USER_KEY);
+  if (user) {
+    return JSON.parse(sessionStorage.getItem(USER_KEY));
+  } else {
+    return null;
+  }
+}
+
+export function deleteUser() {
+  sessionStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(USER_KEY);
+}
+
 function timeDifference(current, previous) {
   const milliSecondsPerMinute = 60 * 1000;
   const milliSecondsPerHour = milliSecondsPerMinute * 60;

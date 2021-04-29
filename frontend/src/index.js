@@ -3,60 +3,81 @@ import ReactDOM from 'react-dom';
 import './styles/index.css';
 import App from './components/App';
 import { BrowserRouter } from 'react-router-dom';
-import { AUTH_TOKEN } from './constants';
 import { setContext } from '@apollo/client/link/context';
-import { split } from '@apollo/client';
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { getMainDefinition } from '@apollo/client/utilities';
 
 import reportWebVitals from './reportWebVitals';
 
-import {
-  ApolloProvider,
-  ApolloClient,
-  createHttpLink,
-  InMemoryCache
-} from '@apollo/client';
 
-const httpLink = createHttpLink({
-  uri: 'http://localhost:4000'
-});
+import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
+import { HttpLink } from "apollo-link-http";
+import { onError } from "apollo-link-error";
+import { ApolloLink, split } from "apollo-link";
+import { WebSocketLink } from "apollo-link-ws";
+import { getMainDefinition } from "apollo-utilities";
 
-const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem(AUTH_TOKEN);
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : ''
+import { TOKEN_KEY, getUser } from './utils';
+const API_URL = "localhost:4000/graphql";
+
+const user = getUser();
+
+const createLink = () => {
+  const authLink = setContext((_, { headers }) => {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    return {
+      headers: {
+        ...headers,
+        authorization: token ? `Bearer ${token}` : ''
+      }
+    };
+  });
+  const wsLink = new WebSocketLink({
+    uri: `ws://${API_URL}`,
+    credentials: 'include',
+    sameSite: true,
+    options: {
+      reconnect: true,
+      connectionParams: {
+        authToken: sessionStorage.getItem(TOKEN_KEY)
+      }
     }
-  };
-});
+  });
+  const httpLink = new HttpLink({
+    uri: `http://${API_URL}`,
+    credentials: 'include',
+    sameSite: true,
+  });
+  return split(
+    ({ query }) => {
+      const { kind, operation } = getMainDefinition(query);
+      console.log("kind:", kind);
+      console.log("operation:", operation);
+      console.log(query);
+      console.log(user);
+      return kind === "OperationDefinition" && operation === "subscription";
+    },
+    wsLink,
+    authLink.concat(httpLink)
+  );
+};
 
-const wsLink = new WebSocketLink({
-  uri: `ws://localhost:4000/graphql`,
-  options: {
-    reconnect: true,
-    connectionParams: {
-      authToken: localStorage.getItem(AUTH_TOKEN)
-    }
-  }
-});
-
-const link = split(
-  ({ query }) => {
-    const { kind, operation } = getMainDefinition(query);
-    return (
-      kind === 'OperationDefinition' &&
-      operation === 'subscription'
+const onErrorHandler = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors)
+    graphQLErrors.forEach(({ message, locations, path }) =>
+      console.log(
+        '[GraphQL error]: Message: ',message, 'Location: ', locations, 'Path: ', path,
+        user
+      )
     );
-  },
-  wsLink,
-  authLink.concat(httpLink)
-);
+  if (networkError) console.log('[Network error]: ', networkError, user);
+});
+
+const link = ApolloLink.from([onErrorHandler, createLink()]);
 
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache({
+    addTypename: true
+  })
 });
 
 ReactDOM.render(
@@ -67,6 +88,7 @@ ReactDOM.render(
   </BrowserRouter>,
   document.getElementById('root')
 );
+
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

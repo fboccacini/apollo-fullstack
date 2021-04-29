@@ -1,8 +1,8 @@
 import React from 'react';
 import { useMutation, gql } from '@apollo/client';
-import { AUTH_TOKEN, LINKS_PER_PAGE } from '../constants';
+import { LINKS_PER_PAGE } from '../constants';
 import { FEED_QUERY } from './LinkList';
-import { timeDifferenceForDate } from '../utils';
+import { TOKEN_KEY, timeDifferenceForDate } from '../utils';
 
 const VOTE_MUTATION = gql`
   mutation VoteMutation($linkId: ID!) {
@@ -26,8 +26,7 @@ const VOTE_MUTATION = gql`
 
 const Link = (props) => {
   const { link } = props;
-  const authToken = localStorage.getItem(AUTH_TOKEN);
-
+  const authToken = sessionStorage.getItem(TOKEN_KEY);
   const take = LINKS_PER_PAGE;
   const skip = 0;
   const orderBy = { createdAt: 'desc' };

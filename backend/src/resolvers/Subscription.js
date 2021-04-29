@@ -1,5 +1,5 @@
 function newLinkSubscribe(parent, args, context, info) {
-  return context.pubsub.asyncIterator("NEW_LINK")
+  return context.pubsub.asyncIterator(["NEW_LINK"])
 }
 
 const newLink = {
@@ -10,7 +10,7 @@ const newLink = {
 }
 
 function newVoteSubscribe(parent, args, context, info) {
-  return context.pubsub.asyncIterator("NEW_VOTE")
+  return context.pubsub.asyncIterator(["NEW_VOTE"])
 }
 
 const newVote = {

@@ -1,11 +1,15 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
-import { AUTH_TOKEN } from '../constants';
+import { getUser, deleteUser } from '../utils';
 
 const Header = () => {
   const history = useHistory();
-  const authToken = localStorage.getItem(AUTH_TOKEN);
+  var user_name = null;
+
+  if (getUser()) {
+    user_name = getUser().name;
+  }
   return (
     <div className="flex pa1 justify-between nowrap orange">
       <div className="flex flex-fixed black">
@@ -21,7 +25,7 @@ const Header = () => {
         <Link to="/search" className="ml1 no-underline black">
                 search
         </Link>
-        {authToken && (
+        {user_name && (
           <div className="flex">
             <div className="ml1">|</div>
             <Link
@@ -33,16 +37,27 @@ const Header = () => {
           </div>
         )}
       </div>
+      {user_name && (
+        <div
+          className="flex flex-fixed black"
+        >
+          {"Ciao, " + user_name}
+        </div>
+      )}
+      
       <div className="flex flex-fixed">
-        {authToken ? (
-          <div
-            className="ml1 pointer black"
-            onClick={() => {
-              localStorage.removeItem(AUTH_TOKEN);
-              history.push(`/`);
-            }}
-          >
-            logout
+        {user_name ? (
+          <div>
+            <div
+              className="ml1 pointer black"
+              onClick={() => {
+                deleteUser();
+                user_name = null;
+                history.push(`/`);
+              }}
+            >
+              logout
+            </div>
           </div>
         ) : (
           <Link

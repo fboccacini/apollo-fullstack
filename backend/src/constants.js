@@ -1,0 +1,4 @@
+const BASE_URI = 'http://localhost:3000';
+const JWT_SECRET_KEY = 'JWT_SECRET_KEY';
+const COOKIE_KEY = 'COOKIE_KEY';
+const COOKIE_SECRET_KEY = 'COOKIE_SECRET_KEY';
