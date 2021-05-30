@@ -105,3 +105,6 @@ dist
 
 # SQLite files
 *.db
+
+# Hash files
+.hash

@@ -1,15 +1,13 @@
-import React from 'react';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
-import { getUser, deleteUser } from '../utils';
+import { useReactiveVar } from '@apollo/client';
+import { DeleteUser,GetUser } from '../utils';
+import { userVar } from '../cache';
 
 const Header = () => {
   const history = useHistory();
-  var user_name = null;
-
-  if (getUser()) {
-    user_name = getUser().name;
-  }
+  GetUser();
+  const user = useReactiveVar(userVar);
   return (
     <div className="flex pa1 justify-between nowrap orange">
       <div className="flex flex-fixed black">
@@ -25,7 +23,7 @@ const Header = () => {
         <Link to="/search" className="ml1 no-underline black">
                 search
         </Link>
-        {user_name && (
+        {user && user.logged && (
           <div className="flex">
             <div className="ml1">|</div>
             <Link
@@ -37,22 +35,21 @@ const Header = () => {
           </div>
         )}
       </div>
-      {user_name && (
+      {user && user.logged && (
         <div
           className="flex flex-fixed black"
         >
-          {"Ciao, " + user_name}
+          {"Ciao, " + user.name}
         </div>
       )}
       
       <div className="flex flex-fixed">
-        {user_name ? (
+        {user && user.logged ? (
           <div>
             <div
               className="ml1 pointer black"
               onClick={() => {
-                deleteUser();
-                user_name = null;
+                DeleteUser();
                 history.push(`/`);
               }}
             >

@@ -1,25 +1,48 @@
+import { gql } from "@apollo/client";
+import { userVar } from './cache';
 export const USER_KEY = "loggedInUser";
 export const TOKEN_KEY = "token";
-export var user;
 
-export function saveUser(tokens) {
+export function SaveUser(tokens) {
   sessionStorage.setItem(TOKEN_KEY, tokens.token);
   sessionStorage.setItem(USER_KEY, JSON.stringify(tokens.user));
-  user = tokens.user;
+  userVar({
+    name: tokens.user.name,
+    logged: true
+  });
 }
 
-export function getUser() {
-  const user = sessionStorage.getItem(USER_KEY);
-  if (user) {
-    return JSON.parse(sessionStorage.getItem(USER_KEY));
+export const LOGGED_IN_USER_QUERY = gql`
+  query LoggedInUser {
+    loggedInUser {
+      name
+    }
+  }
+`;
+
+export function GetUser() {
+  const storage_user = sessionStorage.getItem(USER_KEY);
+  const usr = JSON.parse(sessionStorage.getItem(USER_KEY));
+  if (storage_user) {
+    userVar({
+      name: usr.name,
+      logged: true
+    });
   } else {
-    return null;
+    userVar({
+      name: '',
+      logged: false
+    });
   }
 }
 
-export function deleteUser() {
+export function DeleteUser() {
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(USER_KEY);
+  userVar({
+    name: '',
+    logged: false
+  });
 }
 
 function timeDifference(current, previous) {

@@ -1,7 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const { ApolloServer } = require('apollo-server-express');
 const { PubSub } = require('apollo-server');
-const http = require('http');
 
 const { validateTokensMiddleware, validateAccessToken } = require('./token-utils');
 const fs = require('fs');
@@ -16,6 +15,7 @@ const User = require('./resolvers/User')
 const Link = require('./resolvers/Link')
 const Vote = require('./resolvers/Vote')
 const Subscription = require('./resolvers/Subscription')
+const address = process.env.SERVER_ADDRESS
 
 const resolvers = {
   Query,
@@ -31,7 +31,7 @@ const pubsub = new PubSub()
 const corsConfig =
   process.env.NODE_ENV !== "production"
     ? {
-      origin: "http://localhost:3000",
+      origin: `http://${address}:3000`,
       credentials: true
     }
     : {
@@ -56,8 +56,6 @@ const server = new ApolloServer({
   },
   subscriptions: {
     context: ({ req, connection }) => {
-      console.log('subuser: ', req.user);
-      console.log('subbody: ', req.body);
       return {
         ...req,
         ...connection,
@@ -68,18 +66,21 @@ const server = new ApolloServer({
     },
     onConnect: (connectionParams, webSocket, context) => {
       const user = validateAccessToken(connectionParams['authToken'])
-      return {
+      newContext = {
+        ...context,
         ...webSocket,
         prisma,
         pubsub,
         userId: { "id": user.userId }
       }
+      console.log('Connected!', context.userId)
+      return newContext
     },
     onOperation: (connectionParams, webSocket, context) => {
-      console.log('porcaccia', connectionParams, webSocket, context)
+      console.log('Operation', connectionParams, webSocket, context)
     },
     onError: (connectionParams, webSocket, context) => {
-      console.log('diobboe', connectionParams, webSocket, context)
+      console.log('Error', connectionParams, webSocket, context)
     },
     onDisconnect: (webSocket, context) => {
       console.log('Disconnected!')
@@ -96,13 +97,12 @@ app.use(validateTokensMiddleware);
 
 server.applyMiddleware({
   app,
-  cors: false // <- ADD
+  cors: false
 });
-// server.installSubscriptionHandlers(app);
 
 expressServer = app.listen({ port: 4000 }, () => {
-  console.log('🚀 Server ready at http://localhost:4000');
+  console.log(`🚀 Server ready at http://${address}:4000`);
 });
 server.installSubscriptionHandlers(expressServer);
 const subPath = server.subscriptionsPath;
-console.log(`Subscriptions are at ws://localhost:4000${subPath}`);
+console.log(`Subscriptions are at ws://${address}:4000${subPath}`);

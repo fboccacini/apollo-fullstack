@@ -7,7 +7,6 @@ import { setContext } from '@apollo/client/link/context';
 
 import reportWebVitals from './reportWebVitals';
 
-
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
 import { HttpLink } from "apollo-link-http";
 import { onError } from "apollo-link-error";
@@ -15,10 +14,10 @@ import { ApolloLink, split } from "apollo-link";
 import { WebSocketLink } from "apollo-link-ws";
 import { getMainDefinition } from "apollo-utilities";
 
-import { TOKEN_KEY, getUser } from './utils';
-const API_URL = "localhost:4000/graphql";
+import { TOKEN_KEY } from './utils';
+import { address } from './env_vars.js';
 
-const user = getUser();
+const API_URL = `${address}:4000/graphql`;
 
 const createLink = () => {
   const authLink = setContext((_, { headers }) => {
@@ -49,10 +48,6 @@ const createLink = () => {
   return split(
     ({ query }) => {
       const { kind, operation } = getMainDefinition(query);
-      console.log("kind:", kind);
-      console.log("operation:", operation);
-      console.log(query);
-      console.log(user);
       return kind === "OperationDefinition" && operation === "subscription";
     },
     wsLink,
@@ -64,11 +59,10 @@ const onErrorHandler = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors)
     graphQLErrors.forEach(({ message, locations, path }) =>
       console.log(
-        '[GraphQL error]: Message: ',message, 'Location: ', locations, 'Path: ', path,
-        user
+        '[GraphQL error]: Message: ',message, 'Location: ', locations, 'Path: ', path
       )
     );
-  if (networkError) console.log('[Network error]: ', networkError, user);
+  if (networkError) console.log('[Network error]: ', networkError);
 });
 
 const link = ApolloLink.from([onErrorHandler, createLink()]);
@@ -77,7 +71,8 @@ const client = new ApolloClient({
   link,
   cache: new InMemoryCache({
     addTypename: true
-  })
+  }),
+  connectToDevTools: true,
 });
 
 ReactDOM.render(

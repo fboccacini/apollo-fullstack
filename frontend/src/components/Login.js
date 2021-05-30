@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router';
 import { useMutation, gql } from '@apollo/client';
-import { saveUser } from '../utils';
+import { SaveUser } from '../utils';
 
 const SIGNUP_MUTATION = gql`
   mutation SignupMutation(
@@ -51,7 +51,7 @@ const Login = () => {
       password: formState.password
     },
     onCompleted: ({ login }) => {
-      saveUser(login);
+      SaveUser(login);
       history.push('/');
     }
   });
@@ -63,7 +63,7 @@ const Login = () => {
       password: formState.password
     },
     onCompleted: ({ signup }) => {
-      saveUser(login);
+      SaveUser(signup);
       history.push('/');
     }
   });

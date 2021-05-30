@@ -1,0 +1,20 @@
+
+FROM mhart/alpine-node:10
+
+# Working directory
+RUN mkdir -p /var/www
+WORKDIR /var/www
+
+# Copy everything
+COPY . .
+
+# Install dependencies
+RUN yarn install
+
+# Build client
+#RUN yarn build
+
+EXPOSE 3000
+
+# Start Server
+CMD yarn start

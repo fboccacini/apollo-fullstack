@@ -65,7 +65,6 @@ async function validateTokensMiddleware(req, res, next) {
   const accessToken = req.cookies["access"];
 
   const decodedAccessToken = validateAccessToken(accessToken);
-  console.log('access token: ',decodedAccessToken);
   if (decodedAccessToken && decodedAccessToken.user) {
     req.user = decodedAccessToken.user;
     return next();
